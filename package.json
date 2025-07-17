@@ -1,18 +1,14 @@
 {
   "name": "yashvardhan-portfolio",
   "version": "1.0.0",
-  "description": "AI/ML Developer Portfolio with Three.js",
+  "description": "AI/ML Developer Portfolio",
   "main": "index.html",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'Static site - no build needed'",
-    "start": "vercel dev"
+    "build": "mkdir -p public && cp -r * public/ || xcopy /E /I . public",
+    "dev": "live-server --port=3000",
+    "start": "live-server --port=3000"
   },
-  "keywords": ["portfolio", "ai", "ml", "three.js", "developer"],
+  "keywords": ["portfolio", "ai", "ml", "developer"],
   "author": "Yashvardhan Thanvi",
-  "license": "MIT",
-  "dependencies": {
-    "three": "^0.160.0"
-  },
-  "devDependencies": {}
+  "license": "MIT"
 }
