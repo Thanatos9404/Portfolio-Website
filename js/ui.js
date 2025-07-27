@@ -1,6 +1,5 @@
 export function loadUI() {
     console.log('Loading Yashvardhan\'s AI-themed UI components');
-    
     initializeAIComponents();
     setupAIInteractions();
     setupMLAnimations();
@@ -9,7 +8,6 @@ export function loadUI() {
 
 function initializeAIComponents() {
     console.log('Initializing AI-themed UI components...');
-    
     setupAIProjectShowcase();
     setupMLSkillAnimations();
     setupAchievementSystem();
@@ -18,8 +16,20 @@ function initializeAIComponents() {
 }
 
 function setupAIProjectShowcase() {
-    // Ensure all 5 projects are rendered with correct data
+    // Updated projects array with MindScope replacing MoodMentor
     const projects = [
+        {
+            title: "MindScope - Mental Health Companion",
+            description: "AI-powered mental health companion app built with React and Next.js, featuring mood tracking, AI chat support, journaling with sentiment analysis, and crisis resources. Uses Llama 3.3-70B model via Together API for empathetic AI responses.",
+            tech: ["React", "Next.js", "Together API", "Llama 3.3", "Sentiment Analysis", "Local Storage"],
+            status: "Live",
+            impact: "Supporting mental wellness with AI",
+            github: "https://github.com/Thanatos9404/MindScope",
+            demo: "https://www.youtube.com/watch?v=kxeXPPel3gM",
+            live: "https://mindscope-yt.vercel.app/",
+            thumbnail: "assets/images/ms.jpg",
+            customModel: true
+        },
         {
             title: "BharatVaani - AI News Companion",
             description: "Multilingual AI-powered news summaries using HuggingFace Transformers with Flask backend, featuring What-If generator and TTS capabilities for breaking language barriers in news consumption.",
@@ -29,17 +39,6 @@ function setupAIProjectShowcase() {
             github: "https://github.com/Thanatos9404/BharatVaani",
             demo: "https://www.youtube.com/watch?v=wvOa9x7HVoI",
             thumbnail: "assets/images/bv.png"
-        },
-        {
-            title: "MoodMentor - Mental Health Predictor",
-            description: "Anonymous mental health assessment tool built in Streamlit using custom ML models and TTS with fully animated, accessible UI for early mental health intervention.",
-            tech: ["Streamlit", "Custom ML Model", "TTS", "Python", "Scikit-learn"],
-            status: "Under Development",
-            impact: "Early mental health assessment",
-            github: null,
-            demo: null,
-            thumbnail: "assets/images/moodmentor.png",
-            customModel: true
         },
         {
             title: "Gesture-Controlled Media Player",
@@ -72,639 +71,502 @@ function setupAIProjectShowcase() {
             thumbnail: "assets/images/ans.png"
         }
     ];
-    
+
     enhanceProjectCards(projects);
 }
 
 function enhanceProjectCards(projects) {
     const projectsGrid = document.querySelector('.projects-grid');
     if (!projectsGrid) return;
-    
+
     projectsGrid.innerHTML = '';
-    
+
     projects.forEach((project, index) => {
         const projectCard = document.createElement('div');
         projectCard.className = 'project-card ai-enhanced';
         projectCard.setAttribute('data-aos', 'fade-up');
         projectCard.setAttribute('data-aos-delay', `${index * 100}`);
+
+        const statusBadge = project.status ? `<div class="project-status-badge ${project.status.toLowerCase()}">${project.status}</div>` : '';
+        const customModelBadge = project.customModel ? '<div class="custom-model-badge">Custom AI Model</div>' : '';
         
-        const statusBadge = project.status ? `<div class="project-status ${project.status.toLowerCase().replace(' ', '-')}">${project.status}</div>` : '';
-        const customModelBadge = project.customModel ? `<div class="custom-model-badge">Custom ML Model</div>` : '';
-        
-        const linksHTML = project.status === 'Under Development' ? 
-            `<div class="project-links">
-                <span class="project-link disabled">Under Development</span>
-            </div>` :
-            `<div class="project-links">
-                <a href="${project.demo}" class="project-link" target="_blank" rel="noopener noreferrer">Watch Demo</a>
-                <a href="${project.github}" class="project-link" target="_blank" rel="noopener noreferrer">GitHub</a>
-            </div>`;
-        
+        const liveLink = project.live ? `<a href="${project.live}" target="_blank" class="project-link" rel="noopener">Live App</a>` : '';
+        const demoLink = project.demo ? `<a href="${project.demo}" target="_blank" class="project-link" rel="noopener">Demo</a>` : '';
+        const githubLink = project.github ? `<a href="${project.github}" target="_blank" class="project-link" rel="noopener">GitHub</a>` : '<span class="project-link disabled">Private Repo</span>';
+
         projectCard.innerHTML = `
-            <div class="project-image" style="background-image: url('${project.thumbnail}'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-                <div class="project-type-badge">${project.tech[0]}</div>
+            <div class="project-image" style="background-image: url('${project.thumbnail}');">
                 ${statusBadge}
                 ${customModelBadge}
                 <div class="project-overlay">
-                    ${linksHTML}
+                    <div class="project-links">
+                        ${liveLink}
+                        ${demoLink}
+                        ${githubLink}
+                    </div>
                 </div>
             </div>
             <div class="project-content">
                 <h3>${project.title}</h3>
                 <p>${project.description}</p>
                 <div class="project-tech">
-                    ${project.tech.map(tech => `<span class="tech-badge">${tech}</span>`).join('')}
+                    ${project.tech.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
                 </div>
-                <div class="project-stats">
-                    <div class="stat">
-                        <span class="stat-label">Impact:</span>
-                        <span class="stat-value">${project.impact}</span>
-                    </div>
+                <div class="project-impact">
+                    <small><strong>Impact:</strong> ${project.impact}</small>
                 </div>
             </div>
         `;
-        
+
+        // Enhanced hover effects
+        projectCard.addEventListener('mouseenter', () => {
+            createParticleEffect(projectCard);
+        });
+
+        // Add click ripple effect
+        projectCard.addEventListener('click', (e) => {
+            createRippleEffect(e, projectCard);
+        });
+
         projectsGrid.appendChild(projectCard);
-        
-        addAIProjectHoverEffects(projectCard);
-    });
-    
-    // Update project counter in about stats
-    updateProjectCounter(projects.length);
-}
-
-function updateProjectCounter(count) {
-    const statItems = document.querySelectorAll('.stat-item');
-    if (statItems.length >= 2) {
-        const projectStat = statItems[1];
-        const projectH3 = projectStat.querySelector('h3');
-        if (projectH3) {
-            projectH3.textContent = `${count}+`;
-        }
-    }
-}
-
-function addAIProjectHoverEffects(card) {
-    card.addEventListener('mouseenter', () => {
-        gsap.to(card, {
-            y: -15,
-            scale: 1.02,
-            rotateX: 5,
-            rotateY: 5,
-            duration: 0.3,
-            ease: "power2.out"
-        });
-        
-        createHoverParticles(card);
-    });
-    
-    card.addEventListener('mouseleave', () => {
-        gsap.to(card, {
-            y: 0,
-            scale: 1,
-            rotateX: 0,
-            rotateY: 0,
-            duration: 0.3,
-            ease: "power2.out"
-        });
     });
 }
 
-function createHoverParticles(element) {
-    const rect = element.getBoundingClientRect();
-    
-    for (let i = 0; i < 5; i++) {
+function createParticleEffect(element) {
+    for (let i = 0; i < 3; i++) {
         const particle = document.createElement('div');
-        particle.className = 'hover-particle';
+        particle.className = 'ai-particle';
         particle.style.cssText = `
-            position: fixed;
+            position: absolute;
             width: 4px;
             height: 4px;
             background: #6366f1;
             border-radius: 50%;
-            left: ${rect.left + Math.random() * rect.width}px;
-            top: ${rect.top + Math.random() * rect.height}px;
             pointer-events: none;
             z-index: 1000;
+            top: ${Math.random() * 100}%;
+            left: ${Math.random() * 100}%;
+            animation: particleFloat 2s ease-out forwards;
         `;
         
-        document.body.appendChild(particle);
+        element.style.position = 'relative';
+        element.appendChild(particle);
         
-        gsap.to(particle, {
-            y: -50,
-            x: (Math.random() - 0.5) * 100,
-            opacity: 0,
-            duration: 1,
-            ease: "power2.out",
-            onComplete: () => {
-                if (document.body.contains(particle)) {
-                    document.body.removeChild(particle);
-                }
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
             }
-        });
+        }, 2000);
     }
 }
 
-function setupMLSkillAnimations() {
-    // Enhanced skills with all requested additions
-    const skills = [
-        // Programming Languages
-        { name: 'Python', level: 95, category: 'Programming' },
-        { name: 'C', level: 70, category: 'Programming' },
-        { name: 'HTML', level: 90, category: 'Programming' },
-        { name: 'CSS', level: 90, category: 'Programming' },
-        { name: 'JavaScript', level: 75, category: 'Programming' },
-        
-        // AI/ML Frameworks
-        { name: 'TensorFlow', level: 85, category: 'AI/ML' },
-        { name: 'PyTorch', level: 80, category: 'AI/ML' },
-        { name: 'Scikit-learn', level: 90, category: 'AI/ML' },
-        { name: 'Keras', level: 85, category: 'AI/ML' },
-        { name: 'HuggingFace', level: 92, category: 'AI/ML' },
-        
-        // Computer Vision & NLP
-        { name: 'OpenCV', level: 88, category: 'Computer Vision' },
-        { name: 'MediaPipe', level: 85, category: 'Computer Vision' },
-        { name: 'NLTK', level: 82, category: 'NLP' },
-        { name: 'Dlib', level: 75, category: 'Computer Vision' },
-        { name: 'IndicTrans', level: 78, category: 'NLP' },
-        
-        // Data Science & Tools
-        { name: 'Streamlit', level: 94, category: 'Web Development' },
-        { name: 'Flask', level: 87, category: 'Web Development' },
-        { name: 'Matplotlib', level: 88, category: 'Data Science' },
-        { name: 'Seaborn', level: 75, category: 'Data Science' },
-        { name: 'Jupyter', level: 90, category: 'Data Science' },
-        { name: 'Pandas', level: 93, category: 'Data Science' },
-        { name: 'NumPy', level: 91, category: 'Data Science' },
-        { name: 'TTS', level: 82, category: 'AI/ML' }
-    ];
+function createRippleEffect(event, element) {
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-effect';
     
-    enhanceSkillBars(skills);
+    const rect = element.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+    
+    ripple.style.cssText = `
+        position: absolute;
+        width: ${size}px;
+        height: ${size}px;
+        left: ${x}px;
+        top: ${y}px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+        border-radius: 50%;
+        transform: scale(0);
+        animation: ripple 0.6s ease-out;
+        pointer-events: none;
+        z-index: 1000;
+    `;
+    
+    element.style.position = 'relative';
+    element.appendChild(ripple);
+    
+    setTimeout(() => {
+        if (ripple.parentNode) {
+            ripple.parentNode.removeChild(ripple);
+        }
+    }, 600);
 }
 
-function enhanceSkillBars(skills) {
-    const skillsGrid = document.querySelector('.skills-grid');
-    if (!skillsGrid) return;
+function setupMLSkillAnimations() {
+    const skillCategories = document.querySelectorAll('.skill-category');
     
-    // Group skills by category
-    const groupedSkills = skills.reduce((acc, skill) => {
-        if (!acc[skill.category]) acc[skill.category] = [];
-        acc[skill.category].push(skill);
-        return acc;
-    }, {});
-    
-    skillsGrid.innerHTML = '';
-    
-    Object.entries(groupedSkills).forEach(([category, categorySkills], index) => {
-        const skillCategory = document.createElement('div');
-        skillCategory.className = 'skill-category ai-enhanced';
-        skillCategory.setAttribute('data-aos', 'fade-up');
-        skillCategory.setAttribute('data-aos-delay', `${index * 100}`);
+    skillCategories.forEach((category, index) => {
+        // Add AI-themed animations
+        category.addEventListener('mouseenter', () => {
+            category.style.transform = 'translateY(-5px) scale(1.02)';
+            category.style.boxShadow = '0 10px 30px rgba(99, 102, 241, 0.2)';
+        });
         
-        skillCategory.innerHTML = `
-            <h3>${category}</h3>
-            <div class="skill-items">
-                ${categorySkills.map(skill => `
-                    <div class="skill-item">
-                        <div class="skill-header">
-                            <span class="skill-name">${skill.name}</span>
-                            <span class="skill-percentage">${skill.level}%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-progress" data-progress="${skill.level}">
-                                <div class="skill-glow"></div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
+        category.addEventListener('mouseleave', () => {
+            category.style.transform = 'translateY(0) scale(1)';
+            category.style.boxShadow = 'none';
+        });
         
-        skillsGrid.appendChild(skillCategory);
-    });
-    
-    // Animate skill bars when in view
-    ScrollTrigger.create({
-        trigger: '.skills',
-        start: 'top 80%',
-        onEnter: () => {
-            document.querySelectorAll('.skill-progress').forEach((bar, index) => {
-                const progress = bar.getAttribute('data-progress');
-                gsap.to(bar, {
-                    width: `${progress}%`,
-                    duration: 1.5,
-                    ease: "power2.out",
-                    delay: index * 0.1
+        // Animate skill bars with AI effect
+        const skillBars = category.querySelectorAll('.skill-progress');
+        skillBars.forEach((bar, skillIndex) => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            const width = bar.getAttribute('data-width') || '90%';
+                            bar.style.width = width;
+                            bar.style.background = 'linear-gradient(45deg, #6366f1, #8b5cf6, #06b6d4)';
+                            bar.style.backgroundSize = '300% 300%';
+                            bar.style.animation = 'gradientShift 2s ease-in-out infinite';
+                        }, skillIndex * 200);
+                    }
                 });
             });
-        }
+            observer.observe(bar);
+        });
     });
 }
 
 function setupAchievementSystem() {
-    // Achievement system is handled in main.js
-    console.log('Achievement system loaded');
+    const achievements = [
+        { text: "🏆 5-Star Python Programmer on HackerRank!", delay: 3000 },
+        { text: "🎯 5+ AI/ML Projects Completed!", delay: 6000 },
+        { text: "🚀 BIT Mesra Computer Applications Student!", delay: 9000 },
+        { text: "💡 Custom ML Models Deployed!", delay: 12000 },
+        { text: "🌟 Multilingual AI Systems Developer!", delay: 15000 }
+    ];
+    
+    achievements.forEach((achievement, index) => {
+        setTimeout(() => {
+            showFloatingAchievement(achievement.text);
+        }, achievement.delay);
+    });
+}
+
+function showFloatingAchievement(text) {
+    const achievement = document.createElement('div');
+    achievement.className = 'floating-achievement';
+    achievement.textContent = text;
+    achievement.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: -300px;
+        background: linear-gradient(45deg, #6366f1, #8b5cf6);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-weight: 500;
+        z-index: 1000;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        animation: achievementSlide 8s ease-in-out forwards;
+    `;
+    
+    document.body.appendChild(achievement);
+    
+    setTimeout(() => {
+        if (document.body.contains(achievement)) {
+            document.body.removeChild(achievement);
+        }
+    }, 8000);
 }
 
 function setupAIContactForm() {
-    const form = document.querySelector('.contact-form');
-    if (!form) return;
+    const contactForm = document.getElementById('contactForm');
+    if (!contactForm) return;
     
-    const inputs = form.querySelectorAll('input, textarea');
+    const inputs = contactForm.querySelectorAll('input, textarea');
     
     inputs.forEach(input => {
-        input.addEventListener('input', (e) => {
-            validateAIInput(e.target);
+        input.addEventListener('focus', () => {
+            input.style.borderColor = '#6366f1';
+            input.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
         });
         
-        input.addEventListener('focus', (e) => {
-            createFocusEffect(e.target);
+        input.addEventListener('blur', () => {
+            input.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            input.style.boxShadow = 'none';
         });
-    });
-    
-    form.addEventListener('submit', handleAIFormSubmission);
-}
-
-function validateAIInput(input) {
-    const value = input.value.trim();
-    let isValid = true;
-    let message = '';
-    
-    switch(input.type) {
-        case 'email':
-            isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-            message = isValid ? '✓ Valid email' : '✗ Invalid email format';
-            break;
-        case 'text':
-            isValid = value.length >= 2;
-            message = isValid ? '✓ Looks good' : '✗ Too short';
-            break;
-        default:
-            isValid = value.length >= 10;
-            message = isValid ? '✓ Good message' : '✗ Message too short';
-    }
-    
-    showValidationMessage(input, message, isValid);
-}
-
-function showValidationMessage(input, message, isValid) {
-    let messageElement = input.parentNode.querySelector('.validation-message');
-    
-    if (!messageElement) {
-        messageElement = document.createElement('div');
-        messageElement.className = 'validation-message';
-        input.parentNode.appendChild(messageElement);
-    }
-    
-    messageElement.textContent = message;
-    messageElement.style.color = isValid ? '#10b981' : '#ef4444';
-    messageElement.style.fontSize = '0.8rem';
-    messageElement.style.marginTop = '5px';
-}
-
-function createFocusEffect(input) {
-    const rect = input.getBoundingClientRect();
-    
-    for (let i = 0; i < 3; i++) {
-        const particle = document.createElement('div');
-        particle.style.cssText = `
-            position: fixed;
-            width: 2px;
-            height: 2px;
-            background: #6366f1;
-            border-radius: 50%;
-            left: ${rect.left + Math.random() * rect.width}px;
-            top: ${rect.top + Math.random() * rect.height}px;
-            pointer-events: none;
-            z-index: 1000;
-        `;
         
-        document.body.appendChild(particle);
-        
-        gsap.to(particle, {
-            y: -30,
-            x: (Math.random() - 0.5) * 50,
-            opacity: 0,
-            duration: 1,
-            ease: "power2.out",
-            onComplete: () => {
-                if (document.body.contains(particle)) {
-                    document.body.removeChild(particle);
-                }
+        // AI typing effect for placeholders
+        input.addEventListener('input', () => {
+            if (input.value.length > 0) {
+                input.style.background = 'rgba(99, 102, 241, 0.05)';
+            } else {
+                input.style.background = 'rgba(255, 255, 255, 0.1)';
             }
         });
-    }
-}
-
-function handleAIFormSubmission(e) {
-    e.preventDefault();
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    
-    submitBtn.innerHTML = `
-        <div class="ai-loading">
-            <div class="loading-dots">
-                <div></div><div></div><div></div>
-            </div>
-            Processing with AI...
-        </div>
-    `;
-    
-    submitBtn.disabled = true;
-    
-    // Submit to Formspree
-    fetch('https://formspree.io/f/meozqqoj', {
-        method: 'POST',
-        body: new FormData(e.target),
-        headers: {
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            submitBtn.textContent = 'Message Sent Successfully!';
-            submitBtn.style.background = 'linear-gradient(45deg, #10b981, #059669)';
-            createSuccessAnimation();
-            e.target.reset();
-        } else {
-            throw new Error('Form submission failed');
-        }
-    })
-    .catch(error => {
-        submitBtn.textContent = 'Failed to send. Please try again.';
-        submitBtn.style.background = 'linear-gradient(45deg, #ef4444, #dc2626)';
-    })
-    .finally(() => {
-        setTimeout(() => {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-            submitBtn.style.background = '';
-        }, 3000);
     });
-}
-
-function createSuccessAnimation() {
-    const successElement = document.createElement('div');
-    successElement.innerHTML = '🎉 Message sent successfully!';
-    successElement.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: linear-gradient(45deg, #10b981, #059669);
-        color: white;
-        padding: 20px 40px;
-        border-radius: 50px;
-        font-weight: bold;
-        font-size: 1.2rem;
-        z-index: 1000;
-        opacity: 0;
-        scale: 0;
-    `;
-    
-    document.body.appendChild(successElement);
-    
-    gsap.to(successElement, {
-        opacity: 1,
-        scale: 1,
-        duration: 0.5,
-        ease: "back.out(1.7)"
-    });
-    
-    setTimeout(() => {
-        gsap.to(successElement, {
-            opacity: 0,
-            scale: 0,
-            duration: 0.5,
-            ease: "power2.in",
-            onComplete: () => {
-                if (document.body.contains(successElement)) {
-                    document.body.removeChild(successElement);
-                }
-            }
-        });
-    }, 3000);
 }
 
 function setupCodingAnimation() {
-    const codeLines = [
-        "import tensorflow as tf",
-        "from transformers import pipeline",
-        "import pandas as pd",
-        "import numpy as np",
-        "model = tf.keras.Sequential([",
-        "    tf.keras.layers.Dense(128, activation='relu'),",
-        "    tf.keras.layers.Dropout(0.2),",
-        "    tf.keras.layers.Dense(10, activation='softmax')",
-        "])",
-        "model.compile(optimizer='adam',",
-        "              loss='sparse_categorical_crossentropy',",
-        "              metrics=['accuracy'])",
-        "history = model.fit(X_train, y_train, epochs=10)"
-    ];
+    const heroSection = document.querySelector('.hero');
+    if (!heroSection) return;
     
-    let currentLine = 0;
-    
-    setInterval(() => {
-        if (Math.random() < 0.1) {
-            showCodeLine(codeLines[currentLine]);
-            currentLine = (currentLine + 1) % codeLines.length;
-        }
-    }, 1000);
-}
-
-function showCodeLine(code) {
-    const codeLine = document.createElement('div');
-    codeLine.className = 'floating-code-line';
-    codeLine.textContent = code;
-    codeLine.style.cssText = `
-        position: fixed;
-        right: -400px;
-        top: ${Math.random() * (window.innerHeight - 100)}px;
-        background: rgba(26, 26, 26, 0.9);
-        color: #6366f1;
-        padding: 8px 16px;
-        border-radius: 5px;
-        font-family: 'Courier New', monospace;
-        font-size: 12px;
-        z-index: 1;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(99, 102, 241, 0.3);
+    // Create coding animation overlay
+    const codeOverlay = document.createElement('div');
+    codeOverlay.className = 'code-animation-overlay';
+    codeOverlay.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+        opacity: 0.1;
     `;
     
-    document.body.appendChild(codeLine);
+    const codeSnippets = [
+        'import tensorflow as tf',
+        'from transformers import pipeline',
+        'import pandas as pd',
+        'model = tf.keras.Sequential()',
+        'classifier = pipeline("sentiment-analysis")',
+        'df = pd.read_csv("data.csv")',
+        'model.compile(optimizer="adam")',
+        'predictions = model.predict(X_test)'
+    ];
     
-    gsap.to(codeLine, {
-        right: 20,
-        duration: 2,
-        ease: "power2.out"
-    });
-    
-    setTimeout(() => {
-        gsap.to(codeLine, {
-            right: -400,
-            duration: 2,
-            ease: "power2.in",
-            onComplete: () => {
-                if (document.body.contains(codeLine)) {
-                    document.body.removeChild(codeLine);
+    setInterval(() => {
+        if (Math.random() > 0.7) {
+            const codeLine = document.createElement('div');
+            codeLine.className = 'floating-code';
+            codeLine.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+            codeLine.style.cssText = `
+                position: absolute;
+                color: #6366f1;
+                font-family: 'Courier New', monospace;
+                font-size: 0.8rem;
+                left: ${Math.random() * 80}%;
+                top: ${Math.random() * 80}%;
+                animation: codeFloat 5s linear forwards;
+                pointer-events: none;
+            `;
+            
+            codeOverlay.appendChild(codeLine);
+            
+            setTimeout(() => {
+                if (codeLine.parentNode) {
+                    codeLine.parentNode.removeChild(codeLine);
                 }
-            }
-        });
-    }, 4000);
+            }, 5000);
+        }
+    }, 2000);
+    
+    heroSection.appendChild(codeOverlay);
 }
 
 function setupAIInteractions() {
-    const buttons = document.querySelectorAll('.btn');
+    // Enhanced scroll animations for AI theme
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
     
-    buttons.forEach(button => {
-        button.addEventListener('mouseenter', () => {
-            createButtonParticles(button);
-            gsap.to(button, {
-                scale: 1.05,
-                duration: 0.3,
-                ease: "power2.out"
-            });
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                
+                // Add AI particle effect
+                if (entry.target.classList.contains('project-card')) {
+                    setTimeout(() => {
+                        createAIParticles(entry.target);
+                    }, 300);
+                }
+            }
         });
-        
-        button.addEventListener('mouseleave', () => {
-            gsap.to(button, {
-                scale: 1,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        });
+    }, observerOptions);
+    
+    // Observe all animated elements
+    document.querySelectorAll('.project-card, .skill-category, .stat-item').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s ease-out';
+        observer.observe(el);
     });
 }
 
-function createButtonParticles(button) {
-    const rect = button.getBoundingClientRect();
-    
-    for (let i = 0; i < 8; i++) {
+function createAIParticles(element) {
+    for (let i = 0; i < 5; i++) {
         const particle = document.createElement('div');
+        particle.className = 'ai-particle';
         particle.style.cssText = `
-            position: fixed;
+            position: absolute;
             width: 3px;
             height: 3px;
             background: #6366f1;
             border-radius: 50%;
-            left: ${rect.left + rect.width / 2}px;
-            top: ${rect.top + rect.height / 2}px;
             pointer-events: none;
             z-index: 1000;
+            top: ${Math.random() * 100}%;
+            left: ${Math.random() * 100}%;
+            animation: aiParticleFloat 3s ease-out forwards;
         `;
         
-        document.body.appendChild(particle);
+        element.style.position = 'relative';
+        element.appendChild(particle);
         
-        const angle = (i / 8) * Math.PI * 2;
-        const distance = 50;
-        
-        gsap.to(particle, {
-            x: Math.cos(angle) * distance,
-            y: Math.sin(angle) * distance,
-            opacity: 0,
-            duration: 0.6,
-            ease: "power2.out",
-            onComplete: () => {
-                if (document.body.contains(particle)) {
-                    document.body.removeChild(particle);
-                }
+        setTimeout(() => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
             }
-        });
+        }, 3000);
     }
 }
 
 function setupMLAnimations() {
-    ScrollTrigger.create({
-        trigger: '.about',
-        start: 'top center',
-        onEnter: () => {
-            createMLVisualization();
+    // Neural network visualization in hero section
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+        const neuralNet = document.createElement('div');
+        neuralNet.className = 'neural-network';
+        neuralNet.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.1;
+        `;
+        
+        // Create neural network nodes
+        for (let i = 0; i < 12; i++) {
+            const node = document.createElement('div');
+            node.className = 'neural-node';
+            node.style.cssText = `
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                background: #6366f1;
+                border-radius: 50%;
+                top: ${Math.random() * 100}%;
+                left: ${Math.random() * 100}%;
+                animation: neuralPulse ${2 + Math.random() * 2}s ease-in-out infinite;
+            `;
+            neuralNet.appendChild(node);
+        }
+        
+        heroContent.style.position = 'relative';
+        heroContent.appendChild(neuralNet);
+    }
+}
+
+function setupRealTimeUpdates() {
+    // Simulate real-time AI processing
+    const stats = document.querySelectorAll('.stat-item h3');
+    
+    stats.forEach((stat, index) => {
+        if (stat.textContent.includes('+')) {
+            const baseNumber = parseInt(stat.textContent.replace('+', ''));
+            let currentNumber = 0;
+            
+            const increment = () => {
+                if (currentNumber < baseNumber) {
+                    currentNumber++;
+                    stat.textContent = currentNumber + '+';
+                    setTimeout(increment, 50);
+                }
+            };
+            
+            // Start animation when element comes into view
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setTimeout(increment, index * 200);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            
+            observer.observe(stat);
         }
     });
 }
 
-function createMLVisualization() {
-    const visualization = document.createElement('div');
-    visualization.className = 'ml-visualization';
-    visualization.innerHTML = `
-        <div class="ml-process">
-            <div class="ml-step active">Data Collection</div>
-            <div class="ml-step">Preprocessing</div>
-            <div class="ml-step">Model Training</div>
-            <div class="ml-step">Evaluation</div>
-            <div class="ml-step">Deployment</div>
-        </div>
-    `;
-    
-    visualization.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(26, 26, 26, 0.9);
-        border-radius: 10px;
-        padding: 15px;
-        z-index: 1000;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(99, 102, 241, 0.3);
-    `;
-    
-    document.body.appendChild(visualization);
-    
-    const steps = visualization.querySelectorAll('.ml-step');
-    let currentStep = 0;
-    
-    setInterval(() => {
-        steps.forEach(step => step.classList.remove('active'));
-        steps[currentStep].classList.add('active');
-        currentStep = (currentStep + 1) % steps.length;
-    }, 2000);
-    
-    setTimeout(() => {
-        gsap.to(visualization, {
-            opacity: 0,
-            y: 50,
-            duration: 0.5,
-            ease: "power2.in",
-            onComplete: () => {
-                if (document.body.contains(visualization)) {
-                    document.body.removeChild(visualization);
-                }
-            }
-        });
-    }, 15000);
-}
-
-function setupRealTimeUpdates() {
-    updateStatsRealTime();
-    setInterval(updateStatsRealTime, 30000);
-}
-
-function updateStatsRealTime() {
-    const statItems = document.querySelectorAll('.stat-item h3');
-    
-    if (statItems.length >= 3) {
-        const certifications = parseInt(statItems[0].textContent) || 15;
-        const projects = parseInt(statItems[1].textContent) || 5;
-        const cgpa = parseFloat(statItems[2].textContent) || 9.3;
-        
-        gsap.to(statItems[0], {
-            textContent: certifications + Math.floor(Math.random() * 1),
-            duration: 1,
-            snap: { textContent: 1 }
-        });
-        
-        gsap.to(statItems[1], {
-            textContent: projects,
-            duration: 1,
-            snap: { textContent: 1 }
-        });
+// Add CSS animations to the document
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes particleFloat {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-50px) scale(0); opacity: 0; }
     }
-}
+    
+    @keyframes achievementSlide {
+        0%, 15% { left: -300px; }
+        20%, 80% { left: 20px; }
+        85%, 100% { left: -300px; }
+    }
+    
+    @keyframes codeFloat {
+        0% { transform: translateY(0); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(-100px); opacity: 0; }
+    }
+    
+    @keyframes aiParticleFloat {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0) translateY(-30px); opacity: 0; }
+    }
+    
+    @keyframes neuralPulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.5); opacity: 1; }
+    }
+    
+    @keyframes ripple {
+        0% { transform: scale(0); opacity: 1; }
+        100% { transform: scale(4); opacity: 0; }
+    }
+    
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    
+    .project-impact {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: #a0a0a0;
+        font-size: 0.9rem;
+    }
+    
+    .tech-tag {
+        transition: all 0.3s ease;
+    }
+    
+    .tech-tag:hover {
+        background: rgba(99, 102, 241, 0.3) !important;
+        transform: translateY(-2px);
+    }
+    
+    .project-status-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        z-index: 10;
+    }
+    
+    .project-status-badge.live {
+        background: rgba(16, 185, 129, 0.9);
+        color: white;
+    }
+    
+    .project-status-badge.completed {
+        background: rgba(99, 102, 241, 0.9);
+        color: white;
+    }
+`;
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadUI();
-});
+document.head.appendChild(style);
