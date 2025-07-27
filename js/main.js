@@ -20,6 +20,7 @@ class Portfolio {
         this.gameRunning = false;
         this.gameLoopId = null;
         this.snakeKeyHandler = null;
+        this.gameKeys = {}; // Track game-specific keys
         this.init();
     }
 
@@ -35,10 +36,9 @@ class Portfolio {
         this.setupMusicControl();
         this.setupChatbot();
         this.setupTypingEffect();
-        
         initThreeScene();
         loadUI();
-        
+
         // Force auto-play after short delay
         setTimeout(() => this.forceAutoPlay(), 1000);
     }
@@ -47,7 +47,7 @@ class Portfolio {
         const backgroundAudio = document.getElementById('backgroundAudio');
         const audioIcon = document.querySelector('.audio-icon');
         const audioToggle = document.getElementById('audioToggle');
-        
+
         if (backgroundAudio && audioIcon && audioToggle) {
             // Try immediate play
             backgroundAudio.play().then(() => {
@@ -64,7 +64,6 @@ class Portfolio {
                     document.removeEventListener('click', playOnInteraction);
                     document.removeEventListener('keydown', playOnInteraction);
                 };
-                
                 document.addEventListener('click', playOnInteraction);
                 document.addEventListener('keydown', playOnInteraction);
             });
@@ -109,7 +108,7 @@ class Portfolio {
             const text = headline.textContent;
             headline.textContent = '';
             let i = 0;
-            
+
             const typeWriter = () => {
                 if (i < text.length) {
                     headline.textContent += text.charAt(i);
@@ -117,7 +116,7 @@ class Portfolio {
                     setTimeout(typeWriter, 50);
                 }
             };
-            
+
             setTimeout(typeWriter, 1000);
         }
     }
@@ -126,9 +125,9 @@ class Portfolio {
         const audioToggle = document.getElementById('audioToggle');
         const backgroundAudio = document.getElementById('backgroundAudio');
         const audioIcon = document.querySelector('.audio-icon');
-        
+
         if (!audioToggle || !backgroundAudio || !audioIcon) return;
-        
+
         let isPlaying = false;
 
         audioToggle.addEventListener('click', () => {
@@ -149,28 +148,25 @@ class Portfolio {
         const musicControl = document.createElement('div');
         musicControl.className = 'music-control';
         musicControl.innerHTML = `
-            <button id="musicToggle" class="music-btn">
+            <button id="musicToggle" class="music-btn" title="Change Music">
                 <span class="music-icon">🎵</span>
             </button>
         `;
-        
         musicControl.style.cssText = `
             position: fixed;
             bottom: 100px;
             right: 30px;
             z-index: 1000;
         `;
-        
         document.body.appendChild(musicControl);
-        
+
         const musicToggle = document.getElementById('musicToggle');
         const backgroundAudio = document.getElementById('backgroundAudio');
-        
+
         musicToggle.addEventListener('click', () => {
             this.currentMusicIndex = (this.currentMusicIndex + 1) % this.musicFiles.length;
             backgroundAudio.src = `assets/audio/${this.musicFiles[this.currentMusicIndex]}`;
             backgroundAudio.play();
-            
             this.showMusicNotification(this.musicFiles[this.currentMusicIndex]);
         });
     }
@@ -179,7 +175,6 @@ class Portfolio {
         const notification = document.createElement('div');
         notification.className = 'music-notification';
         notification.innerHTML = `🎵 Now Playing: ${musicFile.replace('.mp3', '').replace('-', ' ')}`;
-        
         notification.style.cssText = `
             position: fixed;
             top: 20px;
@@ -193,9 +188,8 @@ class Portfolio {
             z-index: 1000;
             opacity: 0;
         `;
-        
         document.body.appendChild(notification);
-        
+
         gsap.to(notification, {
             opacity: 1,
             y: 20,
@@ -222,185 +216,125 @@ class Portfolio {
         const chatbot = document.createElement('div');
         chatbot.className = 'chatbot-container';
         chatbot.innerHTML = `
-            <button id="chatbotToggle" class="chatbot-btn">
-                <span class="chatbot-icon">💬</span>
+            <button id="chatbotToggle" class="chatbot-btn" title="AI Assistant">
+                <span class="chatbot-icon">🤖</span>
             </button>
             <div id="chatbotWindow" class="chatbot-window">
                 <div class="chatbot-header">
                     <span>AI Assistant</span>
-                    <button id="chatbotClose">×</button>
+                    <button id="closeChatbot">✕</button>
                 </div>
-                <div class="chatbot-messages" id="chatbotMessages">
-                    <div class="bot-message">Hi! I'm Yashvardhan's AI assistant. How can I help you?</div>
+                <div id="chatbotMessages" class="chatbot-messages">
+                    <div class="bot-message">Hi! I'm your AI assistant. How can I help you today?</div>
                 </div>
                 <div class="chatbot-input">
                     <input type="text" id="chatbotInput" placeholder="Type your message...">
-                    <button id="chatbotSend">Send</button>
+                    <button id="sendMessage">Send</button>
                 </div>
             </div>
         `;
-        
         chatbot.style.cssText = `
             position: fixed;
             bottom: 170px;
             right: 30px;
             z-index: 1000;
         `;
-        
         document.body.appendChild(chatbot);
-        
-        this.initializeChatbot();
+
+        const responses = [
+            "That's an interesting question! I'm here to help with general inquiries about web development and AI.",
+            "I understand your concern. Feel free to ask me anything about technology or programming!",
+            "Thanks for reaching out! I'm always happy to chat about AI, web development, or general topics.",
+            "Great question! While I can't provide professional advice, I'm here for friendly conversation.",
+            "I appreciate you asking! Is there anything specific about technology or programming you'd like to know?"
+        ];
+
+        this.setupChatbotEvents(responses);
     }
 
-    initializeChatbot() {
-        const chatbotToggle = document.getElementById('chatbotToggle');
-        const chatbotWindow = document.getElementById('chatbotWindow');
-        const chatbotClose = document.getElementById('chatbotClose');
-        const chatbotInput = document.getElementById('chatbotInput');
-        const chatbotSend = document.getElementById('chatbotSend');
-        
-        let isOpen = false;
-        
-        chatbotToggle.addEventListener('click', () => {
-            isOpen = !isOpen;
-            gsap.to(chatbotWindow, {
-                opacity: isOpen ? 1 : 0,
-                scale: isOpen ? 1 : 0,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-            chatbotWindow.style.display = isOpen ? 'block' : 'none';
+    setupChatbotEvents(responses) {
+        const toggle = document.getElementById('chatbotToggle');
+        const window = document.getElementById('chatbotWindow');
+        const close = document.getElementById('closeChatbot');
+        const input = document.getElementById('chatbotInput');
+        const send = document.getElementById('sendMessage');
+        const messages = document.getElementById('chatbotMessages');
+
+        toggle.addEventListener('click', () => {
+            const isVisible = window.style.display === 'block';
+            if (isVisible) {
+                gsap.to(window, {
+                    scale: 0,
+                    opacity: 0,
+                    duration: 0.3,
+                    onComplete: () => window.style.display = 'none'
+                });
+            } else {
+                window.style.display = 'block';
+                gsap.fromTo(window, 
+                    { scale: 0, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.3 }
+                );
+            }
         });
-        
-        chatbotClose.addEventListener('click', () => {
-            isOpen = false;
-            gsap.to(chatbotWindow, {
-                opacity: 0,
+
+        close.addEventListener('click', () => {
+            gsap.to(window, {
                 scale: 0,
+                opacity: 0,
                 duration: 0.3,
-                ease: "power2.out"
+                onComplete: () => window.style.display = 'none'
             });
-            chatbotWindow.style.display = 'none';
         });
-        
+
         const sendMessage = () => {
-            const message = chatbotInput.value.trim();
+            const message = input.value.trim();
             if (message) {
-                this.addChatMessage(message, 'user');
-                chatbotInput.value = '';
-                
+                // Add user message
+                const userMsg = document.createElement('div');
+                userMsg.className = 'user-message';
+                userMsg.textContent = message;
+                messages.appendChild(userMsg);
+
+                // Add bot response
                 setTimeout(() => {
-                    this.addChatMessage(this.generateAIResponse(message), 'bot');
+                    const botMsg = document.createElement('div');
+                    botMsg.className = 'bot-message';
+                    botMsg.textContent = responses[Math.floor(Math.random() * responses.length)];
+                    messages.appendChild(botMsg);
+                    messages.scrollTop = messages.scrollHeight;
                 }, 1000);
+
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight;
             }
         };
-        
-        chatbotSend.addEventListener('click', sendMessage);
-        chatbotInput.addEventListener('keypress', (e) => {
+
+        send.addEventListener('click', sendMessage);
+        input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
     }
 
-    addChatMessage(message, sender) {
-        const chatbotMessages = document.getElementById('chatbotMessages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `${sender}-message`;
-        messageDiv.textContent = message;
-        chatbotMessages.appendChild(messageDiv);
-        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-    }
-
-    generateAIResponse(message) {
-        const responses = {
-            'projects': 'Yashvardhan has worked on 5 amazing AI/ML projects including BharatVaani, MoodMentor, Gesture-Controlled Media Player, AI Cheating Detector, and AI News Summarizer!',
-            'skills': 'He\'s skilled in Python, TensorFlow, PyTorch, OpenCV, MediaPipe, Streamlit, Flask, HuggingFace, and many more AI/ML technologies.',
-            'contact': 'You can reach Yashvardhan at yashvt9404@gmail.com',
-            'education': 'He\'s pursuing BCA at Birla Institute of Technology, Mesra with a CGPA of 9.3/10.0',
-            'achievements': 'Smart India Hackathon 2024 selection, 1st Prize in Website Design Competition, 15+ certifications, and 5-star Python rating on HackerRank!'
-        };
-        
-        const lowerMessage = message.toLowerCase();
-        
-        for (const [key, response] of Object.entries(responses)) {
-            if (lowerMessage.includes(key)) {
-                return response;
-            }
-        }
-        
-        return 'That\'s interesting! Feel free to explore the portfolio to learn more about Yashvardhan\'s work and achievements.';
-    }
-
     setupGSAP() {
-        gsap.from('.navbar', {
-            y: -100,
-            opacity: 0,
-            duration: 1,
-            ease: "power2.out"
+        // Enhanced animations
+        gsap.from(".hero-content", { 
+            duration: 1.5, 
+            y: 100, 
+            opacity: 0, 
+            ease: "power3.out",
+            delay: 0.5 
         });
 
-        const heroTl = gsap.timeline();
-        heroTl.from('.hero-title', {
-            y: 100,
-            opacity: 0,
-            duration: 1,
-            delay: 0.5,
-            ease: "power2.out"
-        })
-        .from('.hero-subtitle', {
-            y: 50,
-            opacity: 0,
-            duration: 1,
-            ease: "power2.out"
-        }, '-=0.5')
-        .from('.hero-buttons', {
-            y: 50,
-            opacity: 0,
-            duration: 1,
-            ease: "power2.out"
-        }, '-=0.5');
-
-        gsap.utils.toArray('.section:not(.hero)').forEach((section, index) => {
-            if (section) {
-                gsap.from(section, {
-                    y: 50,
+        // Scroll-triggered animations
+        ScrollTrigger.batch(".project-card", {
+            onEnter: (elements) => {
+                gsap.from(elements, {
                     opacity: 0,
+                    y: 100,
+                    stagger: 0.2,
                     duration: 1,
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top 80%',
-                        end: 'bottom 20%',
-                        toggleActions: 'play none none none'
-                    }
-                });
-            }
-        });
-
-        ScrollTrigger.create({
-            start: 'top -80',
-            end: 99999,
-            toggleClass: {
-                className: 'scrolled',
-                targets: '.navbar'
-            }
-        });
-
-        gsap.utils.toArray('.stat-item h3').forEach(stat => {
-            if (stat) {
-                const finalValue = stat.textContent;
-                const numericValue = parseFloat(finalValue) || 0;
-                
-                ScrollTrigger.create({
-                    trigger: stat,
-                    start: 'top 80%',
-                    onEnter: () => {
-                        gsap.from(stat, {
-                            textContent: 0,
-                            duration: 2,
-                            ease: "power2.out",
-                            snap: { textContent: numericValue > 10 ? 1 : 0.1 },
-                            stagger: 0.1
-                        });
-                    }
+                    ease: "power2.out"
                 });
             }
         });
@@ -416,261 +350,139 @@ class Portfolio {
                 hamburger.classList.toggle('active');
                 navMenu.classList.toggle('active');
             });
-        }
 
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                if (hamburger && navMenu) {
+            // Close menu when clicking on a link (mobile)
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
                     hamburger.classList.remove('active');
                     navMenu.classList.remove('active');
-                }
-            });
-        });
-    }
-
-    setupSmoothTrailCursor() {
-        // Check if device supports cursor and is not mobile
-        if (window.innerWidth <= 768 || 'ontouchstart' in window) {
-            document.body.style.cursor = 'auto';
-            return;
-        }
-        
-        // Mouse position tracking
-        let mouseX = 0;
-        let mouseY = 0;
-        
-        // Create main cursor
-        const cursor = document.createElement('div');
-        cursor.className = 'cursor-trail';
-        document.body.appendChild(cursor);
-        
-        // Create trail dots
-        const trailLength = 6;
-        const trails = [];
-        
-        for (let i = 0; i < trailLength; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'cursor-trail-dot';
-            dot.style.opacity = (trailLength - i) / trailLength * 0.7;
-            dot.style.width = `${8 - i}px`;
-            dot.style.height = `${8 - i}px`;
-            document.body.appendChild(dot);
-            
-            trails.push({
-                element: dot,
-                x: 0,
-                y: 0,
-                currentX: 0,
-                currentY: 0
+                });
             });
         }
-        
-        // Mouse move event
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            
-            // Update main cursor position immediately
-            cursor.style.left = mouseX + 'px';
-            cursor.style.top = mouseY + 'px';
-        });
-        
-        // Animate trail with smooth following
-        const animateTrail = () => {
-            let prevX = mouseX;
-            let prevY = mouseY;
-            
-            trails.forEach((trail, index) => {
-                // Calculate smooth following with delay
-                const delay = (index + 1) * 0.1;
-                trail.currentX += (prevX - trail.currentX) * (0.3 - delay * 0.02);
-                trail.currentY += (prevY - trail.currentY) * (0.3 - delay * 0.02);
-                
-                // Update position
-                trail.element.style.left = trail.currentX + 'px';
-                trail.element.style.top = trail.currentY + 'px';
-                
-                // Set previous position for next dot
-                prevX = trail.currentX;
-                prevY = trail.currentY;
-            });
-            
-            requestAnimationFrame(animateTrail);
-        };
-        
-        // Start animation
-        animateTrail();
-        
-        // Hover effects
-        const interactiveElements = document.querySelectorAll('a, button, .project-card, .skill-chip, input, textarea, .timeline-icon, .social-link');
-        
-        interactiveElements.forEach(element => {
-            element.addEventListener('mouseenter', () => {
-                cursor.classList.add('active');
-                
-                trails.forEach(trail => {
-                    trail.element.style.transform = 'translate(-50%, -50%) scale(1.5)';
-                    trail.element.style.transition = 'transform 0.3s ease';
-                });
-            });
-            
-            element.addEventListener('mouseleave', () => {
-                cursor.classList.remove('active');
-                
-                trails.forEach(trail => {
-                    trail.element.style.transform = 'translate(-50%, -50%) scale(1)';
-                });
-            });
-        });
-        
-        // Click ripple effect
-        document.addEventListener('click', (e) => {
-            const ripple = document.createElement('div');
-            ripple.style.cssText = `
-                position: fixed;
-                width: 40px;
-                height: 40px;
-                border: 2px solid #6366f1;
-                border-radius: 50%;
-                left: ${e.clientX}px;
-                top: ${e.clientY}px;
-                transform: translate(-50%, -50%);
-                pointer-events: none;
-                z-index: 9997;
-                opacity: 1;
-            `;
-            
-            document.body.appendChild(ripple);
-            
-            // Animate ripple
-            let scale = 0;
-            let opacity = 1;
-            
-            const animateRipple = () => {
-                scale += 0.1;
-                opacity -= 0.05;
-                
-                ripple.style.transform = `translate(-50%, -50%) scale(${scale})`;
-                ripple.style.opacity = opacity;
-                
-                if (opacity > 0) {
-                    requestAnimationFrame(animateRipple);
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                if (window.scrollY > 100) {
+                    navbar.classList.add('scrolled');
                 } else {
-                    if (document.body.contains(ripple)) {
-                        document.body.removeChild(ripple);
-                    }
+                    navbar.classList.remove('scrolled');
                 }
-            };
-            
-            animateRipple();
-        });
-        
-        console.log('Smooth trail cursor initialized');
-    }
-
-
-    setupFormHandling() {
-        const form = document.querySelector('.contact-form');
-        if (!form) return;
-        
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            
-            submitBtn.textContent = 'Sending...';
-            submitBtn.disabled = true;
-            
-            fetch('https://formspree.io/f/meozqqoj', {
-                method: 'POST',
-                body: new FormData(form),
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    submitBtn.textContent = 'Message Sent!';
-                    submitBtn.style.background = 'linear-gradient(45deg, #10b981, #059669)';
-                    this.showNotification('Message sent successfully!', 'success');
-                    form.reset();
-                } else {
-                    throw new Error('Form submission failed');
-                }
-            })
-            .catch(error => {
-                this.showNotification('Failed to send message. Please try again.', 'error');
-            })
-            .finally(() => {
-                setTimeout(() => {
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                    submitBtn.style.background = '';
-                }, 2000);
-            });
-        });
-    }
-
-    setupSkillBars() {
-        const skillBars = document.querySelectorAll('.skill-progress');
-        
-        ScrollTrigger.create({
-            trigger: '.skills',
-            start: 'top 80%',
-            onEnter: () => {
-                skillBars.forEach(bar => {
-                    const progress = bar.getAttribute('data-progress');
-                    if (progress) {
-                        gsap.to(bar, {
-                            width: `${progress}%`,
-                            duration: 1.5,
-                            ease: "power2.out",
-                            delay: Math.random() * 0.5
-                        });
-                    }
-                });
             }
         });
-    }
 
-    setupSmoothScroll() {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+        // Smooth scrolling for navigation links
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const targetId = this.getAttribute('href');
-                
-                if (targetId === '#' || !targetId) return;
-                
-                const target = document.querySelector(targetId);
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth'
                     });
                 }
             });
         });
     }
 
-    showNotification(message, type) {
+    setupSmoothTrailCursor() {
+        // Skip cursor effects on mobile devices
+        if (window.innerWidth <= 768) return;
+
+        const cursor = document.createElement('div');
+        cursor.className = 'cursor-trail';
+        document.body.appendChild(cursor);
+
+        const dots = [];
+        for (let i = 0; i < 8; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'cursor-trail-dot';
+            document.body.appendChild(dot);
+            dots.push({ element: dot, x: 0, y: 0 });
+        }
+
+        let mouseX = 0, mouseY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.style.left = mouseX + 'px';
+            cursor.style.top = mouseY + 'px';
+        });
+
+        document.addEventListener('mousedown', () => {
+            cursor.classList.add('active');
+        });
+
+        document.addEventListener('mouseup', () => {
+            cursor.classList.remove('active');
+        });
+
+        // Animate trailing dots
+        setInterval(() => {
+            dots.forEach((dot, index) => {
+                const delay = index * 50;
+                setTimeout(() => {
+                    dot.x += (mouseX - dot.x) * 0.1;
+                    dot.y += (mouseY - dot.y) * 0.1;
+                    dot.element.style.left = dot.x + 'px';
+                    dot.element.style.top = dot.y + 'px';
+                    dot.element.style.opacity = (8 - index) / 8;
+                }, delay);
+            });
+        }, 16);
+    }
+
+    setupFormHandling() {
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.showNotification('Thank you for your message! I\'ll get back to you soon.', 'success');
+                contactForm.reset();
+            });
+        }
+    }
+
+    setupSkillBars() {
+        const skillBars = document.querySelectorAll('.skill-progress');
+        const animateSkillBars = () => {
+            skillBars.forEach(bar => {
+                const rect = bar.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    const width = bar.getAttribute('data-width') || '90%';
+                    bar.style.width = width;
+                }
+            });
+        };
+
+        window.addEventListener('scroll', animateSkillBars);
+        animateSkillBars(); // Initial check
+    }
+
+    setupSmoothScroll() {
+        // Enhanced smooth scrolling for better UX
+        document.documentElement.style.scrollBehavior = 'smooth';
+    }
+
+    showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        
         document.body.appendChild(notification);
-        
+
         gsap.fromTo(notification, 
-            { opacity: 0, y: -50 },
-            { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
+            { opacity: 0, x: 100 },
+            { opacity: 1, x: 0, duration: 0.5 }
         );
-        
+
         setTimeout(() => {
             gsap.to(notification, {
                 opacity: 0,
-                y: -50,
+                x: 100,
                 duration: 0.5,
-                ease: "power2.in",
                 onComplete: () => {
                     if (document.body.contains(notification)) {
                         document.body.removeChild(notification);
@@ -679,185 +491,255 @@ class Portfolio {
             });
         }, 3000);
     }
-}
 
-class YashvardhanPortfolio extends Portfolio {
-    constructor() {
-        super();
-        this.setupAIAnimations();
-        this.setupProjectInteractions();
-        this.setupTechStack();
-        this.setupCreativeAchievements();
-        this.setupLogoMinigame();
-    }
-
-    setupLogoMinigame() {
-        const logo = document.querySelector('.logo-link');
-        if (logo) {
-            logo.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.startSnakeGame();
-            });
-        }
-    }
-
-    startSnakeGame() {
+    // Fixed Snake Game with proper mobile handling and key isolation
+    createSnakeGame() {
         const gameContainer = document.createElement('div');
         gameContainer.className = 'snake-game-container';
         gameContainer.innerHTML = `
             <div class="snake-game">
                 <div class="game-header">
-                    <h3>YVT Snake Game</h3>
-                    <button id="closeGame">×</button>
+                    <h3>Snake Game</h3>
+                    <button id="closeGame">✕</button>
                 </div>
                 <canvas id="snakeCanvas" width="400" height="400"></canvas>
                 <div class="game-controls">
                     <p>Score: <span id="score">0</span></p>
-                    <p>Use arrow keys to play</p>
+                    <p>Use WASD or Arrow Keys to play</p>
+                    <div class="mobile-controls" style="display: none;">
+                        <button class="control-btn" data-direction="up">↑</button>
+                        <div>
+                            <button class="control-btn" data-direction="left">←</button>
+                            <button class="control-btn" data-direction="down">↓</button>
+                            <button class="control-btn" data-direction="right">→</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
-        
+
         gameContainer.style.cssText = `
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        `;
-        
-        document.body.appendChild(gameContainer);
-        
-        this.initializeSnakeGame(gameContainer);
-        
-        document.getElementById('closeGame').addEventListener('click', () => {
-            this.gameRunning = false;
-            if (this.gameLoopId) {
-                clearTimeout(this.gameLoopId);
-            }
-            if (this.snakeKeyHandler) {
-                document.removeEventListener('keydown', this.snakeKeyHandler);
-            }
-            document.body.removeChild(gameContainer);
-        });
-    }
-
-    initializeSnakeGame(gameContainer) {
-        const canvas = document.getElementById('snakeCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        
-        let snake = [{x: 10, y: 10}];
-        let direction = {x: 0, y: 0};
-        let food = {
-            x: Math.floor(Math.random() * 20),
-            y: Math.floor(Math.random() * 20)
-        };
-        let score = 0;
-        this.gameRunning = true;
-        
-        const gameLoop = () => {
-            if (!this.gameRunning) return;
-            
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            if (direction.x !== 0 || direction.y !== 0) {
-                const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
-                
-                if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20) {
-                    this.gameOver(score, gameContainer);
-                    return;
-                }
-                
-                if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-                    this.gameOver(score, gameContainer);
-                    return;
-                }
-                
-                snake.unshift(head);
-                
-                if (head.x === food.x && head.y === food.y) {
-                    score++;
-                    scoreElement.textContent = score;
-                    food = {
-                        x: Math.floor(Math.random() * 20),
-                        y: Math.floor(Math.random() * 20)
-                    };
-                } else {
-                    snake.pop();
-                }
-            }
-            
-            ctx.fillStyle = '#6366f1';
-            snake.forEach(segment => {
-                ctx.fillRect(segment.x * 20, segment.y * 20, 18, 18);
-            });
-            
-            ctx.fillStyle = '#ef4444';
-            ctx.fillRect(food.x * 20, food.y * 20, 18, 18);
-            
-            this.gameLoopId = setTimeout(gameLoop, 150);
-        };
-        
-        this.snakeKeyHandler = (e) => {
-            if (!this.gameRunning) return;
-            
-            switch(e.key) {
-                case 'ArrowUp':
-                    if (direction.y === 0) direction = {x: 0, y: -1};
-                    break;
-                case 'ArrowDown':
-                    if (direction.y === 0) direction = {x: 0, y: 1};
-                    break;
-                case 'ArrowLeft':
-                    if (direction.x === 0) direction = {x: -1, y: 0};
-                    break;
-                case 'ArrowRight':
-                    if (direction.x === 0) direction = {x: 1, y: 0};
-                    break;
-            }
-        };
-        
-        document.addEventListener('keydown', this.snakeKeyHandler);
-        
-        gameLoop();
-    }
-
-    gameOver(score, gameContainer) {
-        this.gameRunning = false;
-        const gameOverScreen = document.createElement('div');
-        gameOverScreen.style.cssText = `
-            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            z-index: 10000;
             background: rgba(0, 0, 0, 0.9);
-            color: white;
+            border-radius: 15px;
             padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            z-index: 10001;
         `;
+
+        document.body.appendChild(gameContainer);
+
+        // Show mobile controls on mobile devices
+        if (window.innerWidth <= 768) {
+            const mobileControls = gameContainer.querySelector('.mobile-controls');
+            mobileControls.style.display = 'block';
+        }
+
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const closeButton = document.getElementById('closeGame');
+
+        // Game state
+        let snake = [{ x: 200, y: 200 }];
+        let food = { x: 100, y: 100 };
+        let dx = 0, dy = 0;
+        let score = 0;
+        this.gameRunning = true;
+
+        // Mobile control buttons
+        const controlBtns = gameContainer.querySelectorAll('.control-btn');
+        controlBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const direction = btn.getAttribute('data-direction');
+                this.changeDirection(direction);
+            });
+        });
+
+        // Game-specific key handler that doesn't interfere with page scrolling
+        this.snakeKeyHandler = (e) => {
+            // Only handle keys if the game is running and in focus
+            if (!this.gameRunning) return;
+            
+            const key = e.key.toLowerCase();
+            let handled = false;
+
+            switch (key) {
+                case 'arrowup':
+                case 'w':
+                    this.changeDirection('up');
+                    handled = true;
+                    break;
+                case 'arrowdown':
+                case 's':
+                    this.changeDirection('down');
+                    handled = true;
+                    break;
+                case 'arrowleft':
+                case 'a':
+                    this.changeDirection('left');
+                    handled = true;
+                    break;
+                case 'arrowright':
+                case 'd':
+                    this.changeDirection('right');
+                    handled = true;
+                    break;
+            }
+
+            // Prevent default only for game keys to avoid page scroll
+            if (handled) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+
+        // Add event listener with capture to intercept before page scroll
+        document.addEventListener('keydown', this.snakeKeyHandler, true);
+
+        // Set canvas cursor to crosshair
+        canvas.style.cursor = 'crosshair';
+
+        closeButton.addEventListener('click', () => {
+            this.endSnakeGame(gameContainer);
+        });
+
+        // Game functions
+        this.changeDirection = (direction) => {
+            if (direction === 'up' && dy === 0) { dx = 0; dy = -20; }
+            if (direction === 'down' && dy === 0) { dx = 0; dy = 20; }
+            if (direction === 'left' && dx === 0) { dx = -20; dy = 0; }
+            if (direction === 'right' && dx === 0) { dx = 20; dy = 0; }
+        };
+
+        const drawSnake = () => {
+            ctx.fillStyle = '#6366f1';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, 18, 18);
+                ctx.strokeStyle = '#8b5cf6';
+                ctx.strokeRect(segment.x, segment.y, 18, 18);
+            });
+        };
+
+        const drawFood = () => {
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(food.x, food.y, 18, 18);
+            ctx.strokeStyle = '#dc2626';
+            ctx.strokeRect(food.x, food.y, 18, 18);
+        };
+
+        const moveSnake = () => {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            // Check if food is eaten
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreElement.textContent = score;
+                // Generate new food position
+                food = {
+                    x: Math.floor(Math.random() * 20) * 20,
+                    y: Math.floor(Math.random() * 20) * 20
+                };
+            } else {
+                snake.pop();
+            }
+        };
+
+        const checkCollisions = () => {
+            const head = snake[0];
+            
+            // Wall collision
+            if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
+                return true;
+            }
+            
+            // Self collision
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+            
+            return false;
+        };
+
+        const gameLoop = () => {
+            if (!this.gameRunning) return;
+
+            ctx.clearRect(0, 0, 400, 400);
+            
+            if (dx !== 0 || dy !== 0) {
+                moveSnake();
+                
+                if (checkCollisions()) {
+                    this.showGameOverScreen(gameContainer, score);
+                    return;
+                }
+            }
+            
+            drawSnake();
+            drawFood();
+            
+            this.gameLoopId = setTimeout(gameLoop, 150);
+        };
+
+        gameLoop();
+    }
+
+    showGameOverScreen(gameContainer, score) {
+        this.gameRunning = false;
+        
+        // Clear any existing game loop
+        if (this.gameLoopId) {
+            clearTimeout(this.gameLoopId);
+            this.gameLoopId = null;
+        }
+
+        const gameOverScreen = document.createElement('div');
+        gameOverScreen.className = 'game-over-screen';
         gameOverScreen.innerHTML = `
-            <h3>Game Over!</h3>
-            <p>Your score: ${score}</p>
-            <button onclick="this.parentElement.remove()" style="
-                background: #6366f1;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                cursor: pointer;
-                margin-top: 10px;
-            ">Close</button>
+            <div style="text-align: center; color: white; padding: 20px;">
+                <h2 style="color: #ef4444; margin-bottom: 10px;">Game Over!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 20px;">Final Score: ${score}</p>
+                <button id="playAgain" style="padding: 10px 20px; margin-right: 10px; background: #6366f1; color: white; border: none; border-radius: 5px; cursor: pointer;">Play Again</button>
+                <button id="closeGameOver" style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+            </div>
         `;
+
         gameContainer.appendChild(gameOverScreen);
+
+        document.getElementById('playAgain').addEventListener('click', () => {
+            this.endSnakeGame(gameContainer);
+            setTimeout(() => this.createSnakeGame(), 100);
+        });
+
+        document.getElementById('closeGameOver').addEventListener('click', () => {
+            this.endSnakeGame(gameContainer);
+        });
+    }
+
+    endSnakeGame(gameContainer) {
+        this.gameRunning = false;
+        
+        // Clear game loop
+        if (this.gameLoopId) {
+            clearTimeout(this.gameLoopId);
+            this.gameLoopId = null;
+        }
+
+        // Remove key event listener
+        if (this.snakeKeyHandler) {
+            document.removeEventListener('keydown', this.snakeKeyHandler, true);
+            this.snakeKeyHandler = null;
+        }
+
+        // Remove game container safely
+        if (gameContainer && document.body.contains(gameContainer)) {
+            document.body.removeChild(gameContainer);
+        }
     }
 
     setupAIAnimations() {
@@ -869,7 +751,7 @@ class YashvardhanPortfolio extends Portfolio {
     createEnhancedBackground() {
         const heroSection = document.querySelector('.hero');
         if (!heroSection) return;
-        
+
         const canvas = document.createElement('canvas');
         canvas.id = 'enhanced-bg';
         canvas.style.cssText = `
@@ -882,12 +764,11 @@ class YashvardhanPortfolio extends Portfolio {
             opacity: 0.15;
             z-index: 1;
         `;
-        
         heroSection.appendChild(canvas);
-        
+
         const ctx = canvas.getContext('2d');
         const particles = [];
-        
+
         for (let i = 0; i < 8; i++) {
             particles.push({
                 centerX: window.innerWidth / 2,
@@ -899,32 +780,30 @@ class YashvardhanPortfolio extends Portfolio {
                 color: `hsl(${240 + Math.random() * 60}, 70%, 60%)`
             });
         }
-        
+
         const animate = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             particles.forEach((particle, index) => {
                 particle.centerX = window.innerWidth / 2;
                 particle.centerY = window.innerHeight / 2;
-                
                 particle.angle += particle.speed;
-                
+
                 const x = particle.centerX + Math.cos(particle.angle) * particle.radius;
                 const y = particle.centerY + Math.sin(particle.angle) * particle.radius;
-                
+
                 ctx.beginPath();
                 ctx.arc(x, y, particle.size, 0, Math.PI * 2);
                 ctx.fillStyle = particle.color;
                 ctx.fill();
-                
+
                 if (index > 0 && Math.abs(particles[index-1].radius - particle.radius) < 50) {
                     const prevX = particle.centerX + Math.cos(particles[index-1].angle) * particles[index-1].radius;
                     const prevY = particle.centerY + Math.sin(particles[index-1].angle) * particles[index-1].radius;
                     const distance = Math.sqrt((x - prevX) ** 2 + (y - prevY) ** 2);
-                    
+
                     if (distance < 100) {
                         ctx.beginPath();
                         ctx.moveTo(x, y);
@@ -935,10 +814,10 @@ class YashvardhanPortfolio extends Portfolio {
                     }
                 }
             });
-            
+
             requestAnimationFrame(animate);
         };
-        
+
         animate();
     }
 
@@ -949,6 +828,17 @@ class YashvardhanPortfolio extends Portfolio {
     setupProjectInteractions() {
         const projectsData = [
             {
+                title: "MindScope - Mental Health Companion",
+                description: "AI-powered mental health companion app built with React and Next.js, featuring mood tracking, AI chat support, journaling with sentiment analysis, and crisis resources. Uses Llama 3.3-70B model via Together API for empathetic AI responses.",
+                tech: ["React", "Next.js", "Together API", "Llama 3.3", "Sentiment Analysis", "Local Storage"],
+                github: "https://github.com/Thanatos9404/MindScope",
+                demo: "https://www.youtube.com/watch?v=kxeXPPel3gM",
+                live: "https://mindscope-yt.vercel.app/",
+                thumbnail: "assets/images/ms.jpg",
+                type: "Mental Health AI",
+                status: "Live"
+            },
+            {
                 title: "BharatVaani - AI News Companion",
                 description: "Multilingual AI-powered news summaries using HuggingFace Transformers with Flask backend, featuring What-If generator and TTS capabilities for breaking language barriers in news consumption.",
                 tech: ["Python", "Flask", "HuggingFace", "TTS", "NewsAPI", "NLTK"],
@@ -956,17 +846,6 @@ class YashvardhanPortfolio extends Portfolio {
                 demo: "https://www.youtube.com/watch?v=wvOa9x7HVoI",
                 thumbnail: "assets/images/bv.png",
                 type: "AI/ML"
-            },
-            {
-                title: "MoodMentor - Mental Health Predictor",
-                description: "Anonymous mental health assessment tool built in Streamlit using custom ML models and TTS with fully animated, accessible UI for early mental health intervention.",
-                tech: ["Streamlit", "Custom ML Model", "TTS", "Python", "Scikit-learn"],
-                github: null,
-                demo: null,
-                thumbnail: "assets/images/moodmentor.png",
-                type: "Healthcare AI",
-                status: "Under Development",
-                customModel: true
             },
             {
                 title: "Gesture-Controlled Media Player",
@@ -997,9 +876,9 @@ class YashvardhanPortfolio extends Portfolio {
             }
         ];
 
-        console.log('Rendering projects:', projectsData.length); // Debug log
+        console.log('Rendering projects:', projectsData.length);
         this.renderProjects(projectsData);
-        
+
         // Force update stats counter after projects are rendered
         setTimeout(() => {
             this.updateProjectStats();
@@ -1027,37 +906,34 @@ class YashvardhanPortfolio extends Portfolio {
             console.error('Projects grid not found');
             return;
         }
-        
+
         console.log('Clearing projects grid and adding', projects.length, 'projects');
         projectsGrid.innerHTML = '';
-        
+
         projects.forEach((project, index) => {
             console.log(`Rendering project ${index + 1}:`, project.title);
-            
             const projectCard = document.createElement('div');
             projectCard.className = 'project-card';
             projectCard.setAttribute('data-aos', 'fade-up');
             projectCard.setAttribute('data-aos-delay', `${index * 100}`);
-            
+
             const statusBadge = project.status ? `<div class="project-status-badge">${project.status}</div>` : '';
-            const customModelBadge = project.customModel ? `<div class="custom-model-badge">Custom ML Model</div>` : '';
+            const typeBadge = `<div class="project-type-badge">${project.type}</div>`;
             
-            const linksHTML = project.status === 'Under Development' ? 
-                `<div class="project-links">
-                    <span class="project-link disabled">Under Development</span>
-                </div>` :
-                `<div class="project-links">
-                    <a href="${project.demo}" class="project-link" target="_blank" rel="noopener noreferrer">Watch Demo</a>
-                    <a href="${project.github}" class="project-link" target="_blank" rel="noopener noreferrer">GitHub</a>
-                </div>`;
-            
+            const liveLink = project.live ? `<a href="${project.live}" target="_blank" class="project-link">Live App</a>` : '';
+            const demoLink = project.demo ? `<a href="${project.demo}" target="_blank" class="project-link">Demo</a>` : '';
+            const githubLink = project.github ? `<a href="${project.github}" target="_blank" class="project-link">GitHub</a>` : '<span class="project-link disabled">Private Repo</span>';
+
             projectCard.innerHTML = `
-                <div class="project-image" style="background-image: url('${project.thumbnail}'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 200px;">
-                    <div class="project-type-badge">${project.type}</div>
+                <div class="project-image" style="background-image: url('${project.thumbnail}')">
+                    ${typeBadge}
                     ${statusBadge}
-                    ${customModelBadge}
                     <div class="project-overlay">
-                        ${linksHTML}
+                        <div class="project-links">
+                            ${liveLink}
+                            ${demoLink}
+                            ${githubLink}
+                        </div>
                     </div>
                 </div>
                 <div class="project-content">
@@ -1068,184 +944,47 @@ class YashvardhanPortfolio extends Portfolio {
                     </div>
                 </div>
             `;
-            
-            projectsGrid.appendChild(projectCard);
-            this.addProjectHoverEffects(projectCard);
-        });
-        
-        console.log('Projects rendered. Grid children count:', projectsGrid.children.length);
-    }
 
-    addProjectHoverEffects(card) {
-        card.addEventListener('mouseenter', () => {
-            gsap.to(card, {
-                y: -15,
-                scale: 1.02,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            gsap.to(card, {
-                y: 0,
-                scale: 1,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        });
-    }
+            // Add ripple effect
+            projectCard.addEventListener('click', (e) => {
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = projectCard.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                projectCard.appendChild(ripple);
 
-    setupTechStack() {
-        const techStack = [
-            'Python', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'OpenCV', 'NLTK',
-            'HuggingFace', 'Streamlit', 'Flask', 'Pandas', 'NumPy',
-            'Matplotlib', 'Seaborn', 'Jupyter', 'MediaPipe', 'Firebase'
-        ];
-        
-        this.createFloatingTechBadges(techStack);
-    }
-
-    createFloatingTechBadges(technologies) {
-        const techContainer = document.createElement('div');
-        techContainer.className = 'floating-tech-stack';
-        techContainer.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.04;
-        `;
-        
-        document.body.appendChild(techContainer);
-        
-        technologies.forEach((tech, index) => {
-            const badge = document.createElement('div');
-            badge.className = 'tech-badge';
-            badge.textContent = tech;
-            badge.style.cssText = `
-                position: absolute;
-                background: linear-gradient(45deg, #6366f1, #8b5cf6);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: 500;
-                left: ${Math.random() * 100}%;
-                top: ${Math.random() * 100}%;
-            `;
-            
-            techContainer.appendChild(badge);
-            
-            gsap.to(badge, {
-                x: Math.random() * 100 - 50,
-                y: Math.random() * 100 - 50,
-                rotation: Math.random() * 180,
-                duration: 25 + Math.random() * 15,
-                repeat: -1,
-                yoyo: true,
-                ease: "none"
-            });
-        });
-    }
-
-    setupCreativeAchievements() {
-        const achievements = [
-            { text: "SIH 2024 🏆", icon: "🏆", color: "#f59e0b" },
-            { text: "Python 5⭐", icon: "⭐", color: "#ffcc02" },
-            { text: "CGPA 9.3 📚", icon: "📚", color: "#6366f1" },
-            { text: "AI Expert 🤖", icon: "🤖", color: "#06b6d4" }
-        ];
-        
-        achievements.forEach((achievement, index) => {
-            setTimeout(() => {
-                this.createSubtleAchievement(achievement);
-            }, index * 8000);
-        });
-    }
-
-    createSubtleAchievement(achievement) {
-        const badge = document.createElement('div');
-        badge.className = 'subtle-achievement';
-        badge.innerHTML = `
-            <span class="achievement-text">${achievement.text}</span>
-        `;
-        
-        badge.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: -200px;
-            background: ${achievement.color};
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        `;
-        
-        document.body.appendChild(badge);
-        
-        gsap.to(badge, {
-            right: 20,
-            duration: 0.5,
-            ease: "power2.out",
-            onComplete: () => {
                 setTimeout(() => {
-                    gsap.to(badge, {
-                        right: -200,
-                        duration: 0.5,
-                        ease: "power2.in",
-                        onComplete: () => {
-                            if (document.body.contains(badge)) {
-                                document.body.removeChild(badge);
-                            }
-                        }
-                    });
-                }, 3000);
-            }
-        });
-    }
+                    if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                }, 600);
+            });
 
-    setupDataFlowAnimation() {
-        for (let i = 0; i < 4; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'data-particle';
-            particle.style.cssText = `
-                position: fixed;
-                width: 2px;
-                height: 2px;
-                background: #6366f1;
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: 1;
-                opacity: 0.3;
-            `;
-            
-            document.body.appendChild(particle);
-            
-            gsap.set(particle, {
-                x: Math.random() * window.innerWidth,
-                y: window.innerHeight + 50
-            });
-            
-            gsap.to(particle, {
-                y: -50,
-                duration: 15 + Math.random() * 10,
-                repeat: -1,
-                ease: "none",
-                delay: Math.random() * 15
-            });
-        }
+            projectsGrid.appendChild(projectCard);
+        });
     }
 }
 
-// Initialize portfolio
-new YashvardhanPortfolio();
+// Initialize the portfolio when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const portfolio = new Portfolio();
+    
+    // Add Snake Game trigger (you can add this to any button)
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'g') {
+            e.preventDefault();
+            portfolio.createSnakeGame();
+        }
+    });
+    
+    // Add click handler for snake game (if you have a button)
+    const gameButton = document.getElementById('snakeGameBtn');
+    if (gameButton) {
+        gameButton.addEventListener('click', () => {
+            portfolio.createSnakeGame();
+        });
+    }
+});
