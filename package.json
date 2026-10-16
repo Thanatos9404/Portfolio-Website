@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "author": "Yashvardhan Thanvi <founder@llmslim.app>",
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
