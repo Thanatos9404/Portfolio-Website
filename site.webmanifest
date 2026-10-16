@@ -1,0 +1,14 @@
+{
+  "name": "Yashvardhan Thanvi",
+  "short_name": "Yashvardhan",
+  "description": "Founder of LLMSlim and AMEYOR. AI engineer and freelancer in Jaipur, India.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

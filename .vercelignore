@@ -1,0 +1,10 @@
+.git
+.idea
+.vscode
+.env
+.env.*
+node_modules
+scripts
+README.md
+lighthouse
+.claude
